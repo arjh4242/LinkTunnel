@@ -1,0 +1,15 @@
+# Genereres af XcodeGen
+*.xcodeproj/
+App/Info.plist
+SafariExtension/Info.plist
+ActionExtension/Info.plist
+
+# Xcode
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+
+# Node / diverse
+node_modules/
+.DS_Store

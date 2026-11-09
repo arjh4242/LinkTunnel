@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="popup.css">
+  <title>LinkTunnel</title>
+</head>
+<body>
+  <header>
+    <img src="icon-96.png" alt="" width="40" height="40">
+    <div>
+      <h1>LinkTunnel</h1>
+      <p class="sub">Tjekker links, før du åbner dem</p>
+    </div>
+  </header>
+
+  <section>
+    <label class="row">
+      <span>Tjek links</span>
+      <input type="checkbox" id="enabled">
+    </label>
+  </section>
+
+  <section>
+    <h2>Hvornår skal LinkTunnel spørge?</h2>
+    <label class="row radio"><input type="radio" name="mode" value="always"><span>Ved alle links til andre websteder</span></label>
+    <label class="row radio"><input type="radio" name="mode" value="warnings"><span>Kun når noget ser mistænkeligt ud</span></label>
+    <label class="row">
+      <span>Spring links inden for samme websted over</span>
+      <input type="checkbox" id="skipSameSite">
+    </label>
+  </section>
+
+  <section>
+    <h2>Følg omdirigeringer</h2>
+    <label class="row radio"><input type="radio" name="followRedirects" value="smart"><span>Forkortede links og nyhedsbrev-links <em>(anbefalet)</em></span></label>
+    <label class="row radio"><input type="radio" name="followRedirects" value="all"><span>Alle links</span></label>
+    <label class="row radio"><input type="radio" name="followRedirects" value="off"><span>Aldrig</span></label>
+    <p class="note">For at finde den endelige side spørger LinkTunnel serveren, hvor linket fører hen – uden at åbne siden. Enkelte engangslinks (fx "bekræft din e-mail") kan blive brugt op af det, derfor følges som standard kun forkortede links.</p>
+  </section>
+
+  <section>
+    <label class="row">
+      <span>Tjek hvor gammelt domænet er</span>
+      <input type="checkbox" id="domainAge">
+    </label>
+    <p class="note">Domænenavnet (ikke hele adressen) slås op i det offentlige domæneregister via rdap.org.</p>
+  </section>
+
+  <section>
+    <h2>Betroede domæner</h2>
+    <ul id="trusted"></ul>
+    <p class="note" id="trusted-empty">Ingen endnu. Tryk "Spørg ikke igen" i pop-up'en for at tilføje et domæne.</p>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>

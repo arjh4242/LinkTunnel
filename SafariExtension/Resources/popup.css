@@ -1,0 +1,30 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f2f2f7; --card: #ffffff; --fg: #111418; --muted: #6b7280; --line: #e5e7eb; --accent: #0a64d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000000; --card: #1c1c1e; --fg: #f2f4f6; --muted: #9aa3ad; --line: #2c2c2e; --accent: #4b9bff; }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 14px; min-width: 300px; background: var(--bg); color: var(--fg);
+  font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+}
+header { display: flex; align-items: center; gap: 12px; margin: 4px 4px 14px; }
+header img { border-radius: 10px; }
+h1 { font-size: 20px; margin: 0; }
+.sub { margin: 0; color: var(--muted); font-size: 13px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; margin: 0 0 6px; }
+section { background: var(--card); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; }
+.row + .row { border-top: 1px solid var(--line); }
+.radio { justify-content: flex-start; }
+.radio input { margin: 0; }
+em { color: var(--muted); font-style: normal; }
+.note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
+input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); }
+input[type=radio] { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+ul { list-style: none; margin: 0; padding: 0; }
+li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+li:first-child { border-top: 0; }
+li button { background: none; border: 0; color: #d33; font: inherit; }
