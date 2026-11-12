@@ -19,6 +19,7 @@ Selve appen har også et felt, hvor du kan indsætte og tjekke et link. Desuden 
 - **Efterligning af kendte brands.** Fx `mitid-login.com`, `paypa1.com`, `danskebank-dk.info` og `nordeaa.com`. Listen dækker MitID, borger.dk, Skat, e-Boks, banker, MobilePay, PostNord, GLS, DAO, Apple, Microsoft, Google, Netflix og flere.
 - **Falske bogstaver.** Kyrilliske og græske tegn, der ligner latinske (fx `аррӏе.com`), og domæner, der blander alfabeter. De vises i teknisk form (`xn--…`), så de ikke ligner originalen.
 - **Linktekst og adresse passer ikke sammen.** Fx når der står "www.danskebank.dk", men linket går et andet sted hen, eller når teksten nævner MitID, mens linket ikke går til MitID.
+- **Markering på forhånd.** I Safari får links, hvor teksten viser én adresse, men linket går til en anden, en rød stiplet ramme, allerede før du trykker. Det hjælper også ved "Åbn i ny fane" fra tryk-og-hold-menuen, som udvidelsen ikke kan stoppe.
 - **Skjulte destinationer.** Forkortede links (bit.ly, t.co …) og nyhedsbrev-sporingslinks følges til den endelige side. Outlook Safe Links, Google-, Facebook- og Proofpoint-omslag pakkes ud lokalt.
 - **Domænets alder.** Den slås op via RDAP. Domæner under 14 dage giver rød advarsel, og domæner under 90 dage giver gul.
 - **Andre tricks.** `@` i adressen, skjulte IP-adresser, http uden kryptering, endelser der ofte bruges til svindel (.top, .xyz, .zip …), gratis hosting og usædvanligt lange domæner.
@@ -59,6 +60,7 @@ Tryk på puslespilsikonet i Safaris adresselinje og vælg LinkTunnel:
 - **Spring links inden for samme websted over** (standard: til).
 - **Følg omdirigeringer:** forkortede links og nyhedsbreve (standard), alle links eller aldrig.
 - **Tjek domænets alder** (standard: til).
+- **Markér links, hvor tekst og adresse ikke passer sammen** (standard: til).
 - **Betroede domæner:** domæner, hvor du har valgt "Spørg ikke igen".
 
 ## Privatliv

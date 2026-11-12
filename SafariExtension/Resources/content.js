@@ -15,6 +15,7 @@
     skipSameSite: true,
     followRedirects: 'smart', // 'smart' | 'all' | 'off'
     domainAge: true,
+    markMismatch: true,       // rød ramme om links, hvor tekst og adresse ikke passer sammen
     trusted: []
   };
   const DEEP_TIMEOUT_MS = 6000;
@@ -22,10 +23,11 @@
 
   let settings = Object.assign({}, DEFAULTS);
   try {
-    api.storage.local.get(DEFAULTS).then((s) => { settings = Object.assign({}, DEFAULTS, s); }, () => {});
+    api.storage.local.get(DEFAULTS).then((s) => { settings = Object.assign({}, DEFAULTS, s); scheduleScan(); }, () => {});
     api.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local') return;
       for (const k of Object.keys(changes)) settings[k] = changes[k].newValue;
+      scheduleScan();
     });
   } catch (e) { /* bruger standardindstillinger */ }
 
@@ -56,21 +58,28 @@
     return text.replace(/\s+/g, ' ').slice(0, 300);
   }
 
+  // Adressen, hvis linket skal tjekkes – ellers null (mailto, samme side, samme websted, betroet domæne).
+  function checkableURL(raw) {
+    let url;
+    try { url = new URL(raw, document.baseURI); } catch (e) { return null; }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null; // mailto, tel, javascript osv.
+
+    // Hop på samme side
+    if (url.origin === location.origin && url.pathname === location.pathname && url.search === location.search) return null;
+
+    const reg = core.registrableDomain(url.hostname.toLowerCase());
+    if (settings.skipSameSite && reg === core.registrableDomain(location.hostname.toLowerCase())) return null;
+    if ((settings.trusted || []).includes(reg)) return null;
+    return url;
+  }
+
   function onClick(event) {
     if (!settings.enabled || event.button !== 0 || event.defaultPrevented) return;
     const found = findAnchor(event);
     if (!found || found.el.hasAttribute('download')) return;
 
-    let url;
-    try { url = new URL(found.raw, document.baseURI); } catch (e) { return; }
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return; // mailto, tel, javascript osv.
-
-    // Hop på samme side
-    if (url.origin === location.origin && url.pathname === location.pathname && url.search === location.search) return;
-
-    const reg = core.registrableDomain(url.hostname.toLowerCase());
-    if (settings.skipSameSite && reg === core.registrableDomain(location.hostname.toLowerCase())) return;
-    if ((settings.trusted || []).includes(reg)) return;
+    const url = checkableURL(found.raw);
+    if (!url) return;
 
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -86,6 +95,92 @@
   }
 
   window.addEventListener('click', onClick, true);
+
+  // -------------------------------------------------------------------------
+  // Markering på forhånd
+  // -------------------------------------------------------------------------
+  // Links, hvor teksten viser én adresse, men linket går til en anden, får en rød
+  // stiplet ramme, før man trykker. Det dækker også "Åbn i ny fane" fra
+  // tryk-og-hold-menuen, som en udvidelse ikke kan stoppe. Kun det lokale tjek
+  // bruges her – der laves ingen netværksopslag for links, man ikke har trykket på.
+
+  const MARK = 'data-linktunnel-mismatch';
+  const MARK_TITLE = 'data-linktunnel-title';
+  const MAX_MARK_LINKS = 3000;
+  const LOOKS_LIKE_ADDRESS = /[a-z0-9\u00a1-\uffff]\.[a-z\u00a1-\uffff]{2,}/i;
+  let scanTimer = null;
+  let observing = false;
+
+  function mismatchDetail(el) {
+    const raw = el.getAttribute('href') || el.getAttribute('xlink:href');
+    if (!raw || el.hasAttribute('download')) return null;
+    if (!LOOKS_LIKE_ADDRESS.test(el.textContent || '')) return null; // billigt forfilter
+    const url = checkableURL(raw);
+    if (!url) return null;
+    const report = core.analyze(url.href, { linkText: linkTextOf(el), pageHost: location.hostname });
+    const hit = (report.findings || []).find((f) => f.id === 'text-mismatch');
+    return hit ? hit.detail || hit.title : null;
+  }
+
+  function unmark(el) {
+    el.removeAttribute(MARK);
+    if (el.hasAttribute(MARK_TITLE)) {
+      el.removeAttribute(MARK_TITLE);
+      el.removeAttribute('title');
+    }
+  }
+
+  function installMarkStyle() {
+    if (document.getElementById('linktunnel-mark-style')) return;
+    const style = document.createElement('style');
+    style.id = 'linktunnel-mark-style';
+    style.textContent = 'a[' + MARK + ']{outline:2px dashed #d93025 !important;outline-offset:2px !important;}';
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function scan() {
+    scanTimer = null;
+    if (!document.documentElement) return;
+    const on = settings.enabled && settings.markMismatch;
+    if (!on) {
+      document.querySelectorAll('a[' + MARK + ']').forEach(unmark);
+      return;
+    }
+    if (!observing) {
+      observing = true;
+      new MutationObserver(scheduleScan).observe(document.documentElement, {
+        childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href']
+      });
+    }
+    const anchors = document.querySelectorAll('a[href]');
+    if (anchors.length > MAX_MARK_LINKS) return; // tjekket ved klik gælder stadig
+    for (const el of anchors) {
+      let detail = null;
+      try { detail = mismatchDetail(el); } catch (e) { /* ignorer enkelte links */ }
+      if (detail) {
+        if (!el.hasAttribute(MARK)) {
+          installMarkStyle();
+          el.setAttribute(MARK, '');
+          if (!el.getAttribute('title')) {
+            el.setAttribute('title', 'LinkTunnel: ' + detail);
+            el.setAttribute(MARK_TITLE, '');
+          }
+        }
+      } else if (el.hasAttribute(MARK)) {
+        unmark(el);
+      }
+    }
+  }
+
+  function scheduleScan() {
+    if (scanTimer === null) scanTimer = setTimeout(scan, 400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scheduleScan, { once: true });
+  } else {
+    scheduleScan();
+  }
 
   // -------------------------------------------------------------------------
   // Analyse

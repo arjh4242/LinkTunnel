@@ -8,6 +8,7 @@
     skipSameSite: true,
     followRedirects: 'smart',
     domainAge: true,
+    markMismatch: true,
     trusted: []
   };
 
@@ -38,7 +39,7 @@
   async function init() {
     const s = Object.assign({}, DEFAULTS, await api.storage.local.get(DEFAULTS));
 
-    for (const id of ['enabled', 'skipSameSite', 'domainAge']) {
+    for (const id of ['enabled', 'skipSameSite', 'domainAge', 'markMismatch']) {
       const el = document.getElementById(id);
       el.checked = !!s[id];
       el.addEventListener('change', () => save({ [id]: el.checked }));
